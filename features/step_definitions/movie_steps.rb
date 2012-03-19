@@ -14,7 +14,18 @@ end
 Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
   #  ensure that that e1 occurs before e2.
   #  page.content  is the entire content of the page as a string.
-  assert false, "Unimplmemented"
+  content = page.body
+  index1 = content.index(e1)
+  index2 = content.index(e2)
+  assert index1, "#{e1}, #{e2}"
+  assert index2, "#{e1}, #{e2}"
+  assert index1 < index2, "#{index1}, #{index2}"
+end
+
+Then /^the results should be sorted:$/ do |table|
+  table.hashes.each do |movie_pair|
+    step %Q{I should see "#{movie_pair[:before]}" before "#{movie_pair[:after]}"}
+  end
 end
 
 # Make it easier to express checking or unchecking several boxes at once
@@ -42,4 +53,9 @@ Then /^I should (not )?see all of the movies:$/ do |neg, movies_table|
       assert page.has_css?("table#movies tbody>tr", :count => rows), "#{page.all("table#movies tbody>tr").count} #{rows}"
     end
   end
+end
+
+Given /^all movies have been selected$/ do
+  step "I check the following ratings: PG,R,G,NC-17,PG-13"
+  step %Q{I press "Refresh"}
 end
