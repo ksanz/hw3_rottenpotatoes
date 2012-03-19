@@ -25,4 +25,21 @@ When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
   # HINT: use String#split to split up the rating_list, then
   #   iterate over the ratings and reuse the "When I check..." or
   #   "When I uncheck..." steps in lines 89-95 of web_steps.rb
+  rating_list.split(',').each do |field| 
+    steps %Q{
+      When I #{uncheck}check "ratings_#{field}"
+      Then the "ratings_#{field}" checkbox should be checked
+    }
+  end
+
 end
+
+Then /^I should see all of the movies$/ do |movies_table, value|
+  rows = 0
+  movies_table.hashes.each do |movie|
+    %Q{Then I should see "#{movie[:title]}"}
+    rows &&= +1
+  end
+  rows.should be value
+end
+
