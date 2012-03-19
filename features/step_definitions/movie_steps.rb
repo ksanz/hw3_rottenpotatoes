@@ -4,7 +4,7 @@ Given /the following movies exist/ do |movies_table|
   movies_table.hashes.each do |movie|
     # each returned element will be a hash whose key is the table header.
     # you should arrange to add that movie to the database here.
-   Movie.create!(movie)
+    Movie.create!(movie)
   end
 end
 
@@ -26,20 +26,20 @@ When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
   #   iterate over the ratings and reuse the "When I check..." or
   #   "When I uncheck..." steps in lines 89-95 of web_steps.rb
   rating_list.split(',').each do |field| 
-    steps %Q{
-      When I #{uncheck}check "ratings_#{field}"
-      Then the "ratings_#{field}" checkbox should be checked
-    }
+    step %Q{I #{uncheck}check "ratings_#{field}"}
   end
-
 end
 
-Then /^I should see all of the movies$/ do |movies_table, value|
-  rows = 0
+Then /^I should (not )?see all of the movies:$/ do |neg, movies_table|
   movies_table.hashes.each do |movie|
-    %Q{Then I should see "#{movie[:title]}"}
-    rows &&= +1
+    step %Q{I should #{neg}see "#{movie[:title]}"}
   end
-  rows.should be value
+  rows = movies_table.hashes.count
+  if neg.nil?
+    if page.respond_to? :should
+      page.should have_css("table#movies tbody>tr", :count => rows)
+    else
+      assert page.has_css?("table#movies tbody>tr", :count => rows), "#{page.all("table#movies tbody>tr").count} #{rows}"
+    end
+  end
 end
-
